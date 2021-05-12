@@ -2,20 +2,20 @@
   <div id="app">
     <main>
       <div class="search-box">
-        <input type="text" placeholder="Search..." class="search-bar" />
+        <input type="text" placeholder="Search..." class="search-bar" v-model="query" @keypress="fetchWeather"/>
       </div>
 
-      <div class="weather-wrap">
+      <div class="weather-wrap" v-if="typeof weather.main !== 'undefined'">
         <div class="location-box">
           <div class="location">
-            Hanoi, Vietnam
+            {{ weather.name }}, {{ weather.sys.country }}
           </div>
           <div class="date">
-            Wednesday 13 May 2021
+            {{ datebuilder() }}
           </div>
           <div class="weather-box">
-            <div class="temp">30°c</div>
-            <div class="weather">Cloudy</div>
+            <div class="temp">{{Math.round(weather.main.temp)}}°c</div>
+            <div class="weather">{{weather.weather[0].main}}</div>
           </div>
         </div>
       </div>
@@ -29,7 +29,36 @@ export default {
   name: 'App',
   data () {
     return {
-      api_key: 'b9a95531348e9e64d3d477eeae75f958'
+      api_key: 'b9a95531348e9e64d3d477eeae75f958',
+      url_base: 'https://api.openweathermap.org/data/2.5/',
+      query: '',
+      weather: {}
+    }
+  },
+  methods: {
+    fetchWeather (e) {
+      if (e.key === 'Enter') {
+        fetch(`${this.url_base}weather?q=${this.query}&units=metric&APPID=${this.api_key}`)
+          .then(res => {
+            return res.json()
+          })
+          .then(this.setResults)
+      }
+    },
+    setResults (results) {
+      this.weather = results
+    },
+    datebuilder () {
+      const d = new Date()
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+      const day = days[d.getDay()]
+      const date = d.getDate()
+      const month = months[d.getMonth()]
+      const year = d.getFullYear()
+
+      return `${day} ${date} ${month} ${year}`
     }
   }
 }
